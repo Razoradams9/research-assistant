@@ -1,0 +1,22 @@
+# Render deployment config.
+# Render reads this file automatically ("Blueprint") to build and run the app.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: research-assistant
+    runtime: python
+    plan: free
+    # Install dependencies (pinned for reproducibility).
+    buildCommand: "pip install -r requirements.lock.txt"
+    # Render provides $PORT; uvicorn must bind to it on 0.0.0.0.
+    # One worker keeps the in-memory SSE run registry consistent.
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1 --timeout-keep-alive 75"
+    # Keys are set in the Render dashboard, not committed here.
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # you paste this in the dashboard
+      - key: TAVILY_API_KEY
+        sync: false          # optional; falls back to DuckDuckGo if unset
+      - key: PYTHON_VERSION
+        value: "3.12.7"      # a stable Python with wheels for all deps

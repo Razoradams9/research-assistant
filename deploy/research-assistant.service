@@ -1,0 +1,34 @@
+# systemd unit for the Multi-Agent Research Assistant
+# Install to: /etc/systemd/system/research-assistant.service
+#
+# Assumes the app lives at /opt/research-assistant with a venv at
+# /opt/research-assistant/.venv. Adjust paths/User if you deploy elsewhere.
+
+[Unit]
+Description=Multi-Agent Research Assistant (FastAPI + Uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/research-assistant
+
+# Loads GROQ_API_KEY / TAVILY_API_KEY etc. from the app's .env
+EnvironmentFile=/opt/research-assistant/.env
+
+# Bind to loopback only; nginx reverse-proxies to it (see nginx.conf).
+# One worker keeps it light on the free-tier box and preserves the
+# in-memory SSE run registry (multiple workers would split it).
+ExecStart=/opt/research-assistant/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 --port 8000 --workers 1 --timeout-keep-alive 75
+
+Restart=on-failure
+RestartSec=3
+
+# Basic hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

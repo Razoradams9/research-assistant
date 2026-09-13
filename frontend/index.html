@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Research Assistant</title>
+  <link rel="stylesheet" href="/static/styles.css?v=3" />
+</head>
+<body>
+  <!-- Depth background: animated gradient blobs + grid layer -->
+  <div class="bg-mesh" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="hero">
+      <h1 class="hero-title">Multi-Agent Research Assistant</h1>
+      <p class="hero-tag">A pipeline of AI agents plans, researches, and writes a cited report. Watch them think in real time.</p>
+    </header>
+
+    <form id="ask-form" class="ask glass">
+      <input
+        id="question"
+        type="text"
+        placeholder="Ask a research question…  e.g. How does caffeine affect sleep quality?"
+        autocomplete="off"
+        required
+      />
+      <button id="ask-btn" type="submit">
+        <span class="btn-label">Research</span>
+      </button>
+    </form>
+
+    <!-- Agent pipeline with animated SVG spine running behind the cards -->
+    <section class="pipeline" id="pipeline">
+      <svg class="spine" id="spine" viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
+        <!-- track -->
+        <line class="spine-track" x1="60" y1="30" x2="940" y2="30" />
+        <!-- animated fill (dash-drawn as stages complete) -->
+        <line class="spine-fill" id="spine-fill" x1="60" y1="30" x2="940" y2="30" />
+        <!-- flowing pulse dot -->
+        <circle class="spine-pulse" id="spine-pulse" cx="60" cy="30" r="5" />
+      </svg>
+
+      <div class="agent-row">
+        <article class="agent-card glass" data-stage="manager" data-idx="0">
+          <div class="agent-glow" aria-hidden="true"></div>
+          <div class="agent-icon">🧭</div>
+          <div class="agent-meta">
+            <h3>Manager</h3>
+            <p class="agent-sub">Plans sub-questions</p>
+          </div>
+          <div class="agent-state" data-state="idle">idle</div>
+          <div class="agent-bar" aria-hidden="true"><span></span></div>
+        </article>
+
+        <article class="agent-card glass" data-stage="researcher" data-idx="1">
+          <div class="agent-glow" aria-hidden="true"></div>
+          <div class="agent-icon">🔍</div>
+          <div class="agent-meta">
+            <h3>Researcher</h3>
+            <p class="agent-sub">Searches &amp; extracts</p>
+          </div>
+          <div class="agent-state" data-state="idle">idle</div>
+          <div class="agent-bar" aria-hidden="true"><span></span></div>
+        </article>
+
+        <article class="agent-card glass" data-stage="synthesizer" data-idx="2">
+          <div class="agent-glow" aria-hidden="true"></div>
+          <div class="agent-icon">✍️</div>
+          <div class="agent-meta">
+            <h3>Synthesizer</h3>
+            <p class="agent-sub">Writes cited report</p>
+          </div>
+          <div class="agent-state" data-state="idle">idle</div>
+          <div class="agent-bar" aria-hidden="true"><span></span></div>
+        </article>
+      </div>
+    </section>
+
+    <main class="grid">
+      <section class="panel glass trail-panel">
+        <div class="panel-head">
+          <h2>Live progress</h2>
+          <span id="pipeline-status" class="status-badge idle">idle</span>
+        </div>
+        <div id="subquestions" class="subquestions"></div>
+        <ul id="trail" class="trail" aria-live="polite"></ul>
+      </section>
+
+      <section class="panel glass report-panel">
+        <div class="panel-head">
+          <h2>Report</h2>
+          <span id="citation-count" class="cite-badge" hidden></span>
+        </div>
+        <div class="report-wrap">
+          <div id="report" class="report">
+            <p class="placeholder" style="opacity:1">Your cited report will appear here once the pipeline finishes.</p>
+          </div>
+          <div class="report-sweep" id="report-sweep" aria-hidden="true"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>$0 stack · Groq · Tavily / DuckDuckGo · FastAPI · SSE · anime.js</span>
+    </footer>
+  </div>
+
+  <script src="/static/vendor/anime.min.js"></script>
+  <script src="/static/markdown.js?v=3"></script>
+  <script src="/static/app.js?v=3"></script>
+</body>
+</html>

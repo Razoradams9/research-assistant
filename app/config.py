@@ -1,0 +1,47 @@
+"""Central configuration, loaded from environment / .env.
+
+Every tunable lives here so you can dial cost, concurrency, and model
+choice without touching agent code.
+"""
+from __future__ import annotations
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
+
+    # LLM: Groq
+    groq_api_key: str = ""
+
+    # Search
+    tavily_api_key: str = ""
+
+    # Model tiering (all free on Groq). Note: Groq's catalog changes over
+    # time — run `GET /openai/v1/models` to see what your key can access,
+    # then set these in .env. Small model for high-volume mechanical
+    # stages, larger model for synthesis quality.
+    manager_model: str = "openai/gpt-oss-20b"
+    researcher_model: str = "openai/gpt-oss-20b"
+    synthesizer_model: str = "openai/gpt-oss-120b"
+    critic_model: str = "openai/gpt-oss-20b"
+
+    # Pipeline guardrails
+    max_sub_questions: int = 4
+    max_results_per_search: int = 5
+    max_content_chars: int = 2000
+    max_concurrency: int = 3
+    enable_critic: bool = False
+    max_critic_revisions: int = 1
+
+    # LLM call reliability
+    llm_timeout_seconds: float = 60.0
+    llm_max_retries: int = 2
+
+    # Persistence
+    sqlite_path: str = "data/runs.db"
+
+
+settings = Settings()
