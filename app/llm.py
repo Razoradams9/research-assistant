@@ -76,6 +76,11 @@ class GroqLLM:
         }
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
+            # gpt-oss and other Groq reasoning models emit a chain-of-thought
+            # that can leak into / crowd out the content field, breaking JSON
+            # parsing. "hidden" keeps reasoning out of the returned content so
+            # we get clean JSON. Ignored by non-reasoning models.
+            kwargs["reasoning_format"] = "hidden"
 
         last_err: Optional[Exception] = None
         for attempt in range(self._max_retries + 1):
@@ -94,8 +99,18 @@ class GroqLLM:
                 )
                 await asyncio.sleep(wait)
             except APIStatusError as e:
-                # Retry only on server-side 5xx; client errors are fatal.
                 last_err = e
+                # If the model rejects reasoning_format (400), drop it and
+                # retry once — keeps us compatible across Groq's model mix.
+                if (
+                    e.status_code == 400
+                    and "reasoning_format" in kwargs
+                    and "reasoning_format" in str(e).lower()
+                ):
+                    logger.warning("Model rejected reasoning_format; retrying without it")
+                    kwargs.pop("reasoning_format", None)
+                    continue
+                # Retry only on server-side 5xx; other client errors are fatal.
                 if 500 <= e.status_code < 600 and attempt < self._max_retries:
                     wait = _backoff_seconds(attempt, e)
                     await asyncio.sleep(wait)
