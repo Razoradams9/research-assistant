@@ -318,15 +318,29 @@
     const cites = (report.citations || []).length;
     if (cites > 0) { citeBadge.hidden = false; citeBadge.textContent = `${cites} citation${cites === 1 ? "" : "s"}`; }
 
-    if (hasAnime) {
+    const blocks = reportEl.children; // top-level report blocks
+    if (hasAnime && blocks.length) {
+      reportEl.classList.add("revealing"); // opt into opacity:0 start
       if (reportSweep) {
         reportSweep.style.transform = "translateX(-110%)";
         anime({ targets: reportSweep, translateX: ["-110%", "110%"], easing: "easeInOutQuad", duration: 900 });
       }
-      anime({ targets: "#report > *", translateY: [16, 0], opacity: [0, 1], delay: anime.stagger(45, { start: 200 }), easing: "easeOutQuad", duration: 520 });
-    } else {
-      reportEl.querySelectorAll("*").forEach((el) => (el.style.opacity = 1));
+      anime({
+        targets: blocks,
+        translateY: [16, 0],
+        opacity: [0, 1],
+        delay: anime.stagger(45, { start: 200 }),
+        easing: "easeOutQuad",
+        duration: 520,
+        // Safety net: guarantee everything is visible when done, so a
+        // missed element can never stay invisible.
+        complete: () => {
+          reportEl.classList.remove("revealing");
+          Array.from(blocks).forEach((el) => (el.style.opacity = 1));
+        },
+      });
     }
+    // If anime.js is missing, content is already visible (no opacity:0 in CSS).
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────
