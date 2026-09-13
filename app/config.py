@@ -36,10 +36,11 @@ class Settings(BaseSettings):
     synthesizer_model: str = "openai/gpt-oss-120b"
     critic_model: str = "openai/gpt-oss-20b"
 
-    # Pipeline guardrails
-    max_sub_questions: int = 4
-    max_results_per_search: int = 5
-    max_content_chars: int = 2000
+    # Pipeline guardrails. Tuned for richer reports: more sub-questions,
+    # more sources each, and more content per source feeding the LLMs.
+    max_sub_questions: int = 5
+    max_results_per_search: int = 6
+    max_content_chars: int = 3500
     max_concurrency: int = 3
     enable_critic: bool = False
     max_critic_revisions: int = 1

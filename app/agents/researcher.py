@@ -50,7 +50,12 @@ Rules:
 - Only extract facts actually supported by the provided snippets. Do not
   invent facts or URLs.
 - Use the exact source_url from the result you drew the fact from.
-- Prefer 2-5 of the most relevant facts. Skip irrelevant results.
+- Extract 4-8 substantive facts when the sources support them. Capture
+  specifics: numbers, mechanisms, examples, caveats, and differing
+  viewpoints — not just headline claims. Each fact should be a full,
+  self-contained sentence, not a fragment.
+- Draw from multiple sources rather than repeating one. Skip only truly
+  irrelevant results.
 - If none of the results are relevant, return an empty "findings" list.
 
 Return ONLY a JSON object with this exact shape:
@@ -170,7 +175,7 @@ class ResearcherAgent(BaseAgent):
             user=user,
             schema=_RawFindings,
             temperature=0.2,
-            max_tokens=1536,
+            max_tokens=2560,
         )
 
         # Keep only findings whose URL actually appeared in the results,

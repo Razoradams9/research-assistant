@@ -31,7 +31,7 @@ def _utc_now_iso() -> str:
 class ResearchRequest(BaseModel):
     question: str = Field(..., min_length=3, description="Raw user research question")
     max_sub_questions: int = Field(
-        default=4, ge=1, le=8, description="Guardrail on how many sub-questions to plan"
+        default=5, ge=1, le=8, description="Guardrail on how many sub-questions to plan"
     )
 
 

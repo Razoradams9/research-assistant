@@ -40,19 +40,25 @@ _SYSTEM = """You are the Synthesizer agent in a research pipeline.
 You are given the original question, a set of sub-questions with their
 findings, and a numbered list of sources.
 
-Write a clear, well-organized report in Markdown that answers the
+Write a thorough, well-organized report in Markdown that answers the
 original question, drawing only on the provided findings.
 
 Rules:
+- Aim for depth: a substantial multi-section report, roughly 600-900
+  words. Develop each theme with 1-2 full paragraphs, not a single line.
+- Explain the "why" and "how" behind facts, connect related findings,
+  note nuances, tradeoffs, and any disagreements between sources.
 - Support factual claims with inline citations using the exact bracketed
   numbers from the SOURCES list, e.g. "Caffeine delays sleep onset [2]."
+  Weave multiple sources together where they overlap.
 - Only cite numbers that appear in the SOURCES list. Never invent numbers
   or sources.
-- Organize with a short intro, themed sections (use ## headings), and a
-  brief conclusion. Do NOT add your own "References" section — that is
-  appended automatically.
-- If the findings are thin or conflicting, say so honestly rather than
-  overstating.
+- Structure: an intro paragraph framing the topic, several themed
+  sections (use ## headings) that each go into real detail, and a
+  conclusion that synthesizes the takeaways. Do NOT add your own
+  "References" section — that is appended automatically.
+- If the findings are genuinely thin, expand on what the available
+  sources do say and note the gaps, rather than writing a stub.
 
 Return ONLY a JSON object with this exact shape:
 {
@@ -115,8 +121,8 @@ class SynthesizerAgent(BaseAgent):
             system=_SYSTEM,
             user=user,
             schema=_RawReport,
-            temperature=0.4,
-            max_tokens=3072,
+            temperature=0.5,
+            max_tokens=6144,
         )
 
         body = raw.report_markdown.strip()

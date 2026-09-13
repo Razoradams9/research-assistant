@@ -20,3 +20,10 @@ services:
         sync: false          # optional; falls back to DuckDuckGo if unset
       - key: PYTHON_VERSION
         value: "3.12.7"      # a stable Python with wheels for all deps
+      # ── Report depth tuning (raise for richer reports) ──────────────
+      - key: MAX_SUB_QUESTIONS
+        value: "5"
+      - key: MAX_RESULTS_PER_SEARCH
+        value: "6"
+      - key: MAX_CONTENT_CHARS
+        value: "3500"
