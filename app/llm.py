@@ -15,7 +15,13 @@ import asyncio
 import logging
 from typing import Optional
 
-from groq import AsyncGroq, APIStatusError, APITimeoutError, RateLimitError
+from groq import (
+    AsyncGroq,
+    APIConnectionError,
+    APIStatusError,
+    APITimeoutError,
+    RateLimitError,
+)
 
 from .config import settings
 
@@ -95,11 +101,29 @@ class GroqLLM:
                     await asyncio.sleep(wait)
                     continue
                 raise LLMError(f"Groq API error {e.status_code}: {e}") from e
+            except APIConnectionError as e:
+                # Can't reach the API host at all. Often transient on small
+                # hosts, so retry with backoff before giving up.
+                last_err = e
+                logger.warning(
+                    "LLM connection error, attempt %d/%d: %s",
+                    attempt + 1, self._max_retries + 1, e,
+                )
+                if attempt < self._max_retries:
+                    await asyncio.sleep(_backoff_seconds(attempt, e))
+                    continue
+                break
             except Exception as e:  # noqa: BLE001 - surface as a clean LLMError
                 last_err = e
                 break
 
-        raise LLMError(f"LLM call failed after {self._max_retries + 1} attempts: {last_err}")
+        # Include the exception TYPE so a bare "Connection error" is
+        # actually diagnosable in logs/UI.
+        err_type = type(last_err).__name__ if last_err else "Unknown"
+        raise LLMError(
+            f"LLM call failed after {self._max_retries + 1} attempts "
+            f"({err_type}): {last_err}"
+        )
 
 
 def _backoff_seconds(attempt: int, err: Exception) -> float:

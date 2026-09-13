@@ -76,6 +76,45 @@ async def stream_research(run_id: str):
     )
 
 
+@app.get("/api/health")
+async def health():
+    """Diagnostic: reports config + Groq reachability WITHOUT leaking secrets.
+
+    Safe to expose — it only returns whether keys are present and whether a
+    minimal Groq connectivity check succeeds, never the key values.
+    """
+    import httpx as _httpx
+
+    from .config import settings as _s
+
+    groq_key = _s.groq_api_key or ""
+    result = {
+        "groq_key_present": bool(groq_key),
+        "groq_key_prefix_ok": groq_key.startswith("gsk_") if groq_key else False,
+        "tavily_key_present": bool(_s.tavily_api_key),
+        "manager_model": _s.manager_model,
+        "synthesizer_model": _s.synthesizer_model,
+        "groq_reachable": None,
+        "groq_check_detail": None,
+    }
+
+    # Lightweight, safe reachability probe to the Groq models endpoint.
+    if groq_key:
+        try:
+            async with _httpx.AsyncClient(timeout=15) as client:
+                r = await client.get(
+                    "https://api.groq.com/openai/v1/models",
+                    headers={"Authorization": f"Bearer {groq_key}"},
+                )
+            result["groq_reachable"] = r.status_code == 200
+            result["groq_check_detail"] = f"status {r.status_code}"
+        except Exception as e:  # noqa: BLE001
+            result["groq_reachable"] = False
+            result["groq_check_detail"] = f"{type(e).__name__}: {e}"
+
+    return result
+
+
 @app.get("/api/runs")
 async def list_runs():
     return {"runs": await store.list_recent()}
