@@ -5,6 +5,7 @@ choice without touching agent code.
 """
 from __future__ import annotations
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +19,13 @@ class Settings(BaseSettings):
 
     # Search
     tavily_api_key: str = ""
+
+    @field_validator("groq_api_key", "tavily_api_key", mode="after")
+    @classmethod
+    def _strip_secret(cls, v: str) -> str:
+        # Defend against a stray newline/space when a key is pasted into a
+        # dashboard env var — otherwise it becomes an illegal HTTP header.
+        return v.strip() if isinstance(v, str) else v
 
     # Model tiering (all free on Groq). Note: Groq's catalog changes over
     # time — run `GET /openai/v1/models` to see what your key can access,
